@@ -58,7 +58,7 @@ namespace RDKit{
                                int numConf=-1);
 
     /*!
-      Converts an Amber trajectory into a list of doubles
+      Converts an AMBER trajectory into a list of doubles
 
       \param inStream     input file
       \param coords       list with coordinates
@@ -66,6 +66,16 @@ namespace RDKit{
     */
     void readAmberTrajectory(std::string fName, std::vector<std::vector<double> > &coords,
                              unsigned int numAtoms);
+
+    /*!
+	  Converts a GROMOS trajectory into a list of doubles
+
+	  \param inStream     input file
+	  \param coords       list with coordinates
+
+	*/
+	void readGromosTrajectory(std::string fName, std::vector<std::vector<double> > &coords,
+                                 unsigned int numAtoms);
 
   } // end namespace ConformerParser
 } // end namespace RDKit

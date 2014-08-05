@@ -54,7 +54,7 @@ using namespace RDKit::ConformerParser;
 
 void test1(){
   BOOST_LOG(rdErrorLog) << "-------------------------------------" << std::endl;
-  BOOST_LOG(rdErrorLog) << "    Test ConformerParser." << std::endl;
+  BOOST_LOG(rdErrorLog) << "    Test AMBER ConformerParser." << std::endl;
 
   ROMol *mol = SmilesToMol("CCC");
   std::vector<std::vector<double> > coords;
@@ -95,7 +95,6 @@ void test1(){
   res = addConformersFromList(*mol, coords, 1);
   TEST_ASSERT(mol->getNumConformers() == 1);
 
-  coords.resize(0);
   mol->clearConformers();
   fName = rdbase + "/Contrib/ConformerParser/test_data/water_coords2.trx";
   readAmberTrajectory(fName, coords, mol->getNumAtoms());
@@ -107,6 +106,53 @@ void test1(){
   BOOST_LOG(rdErrorLog) << "  done" << std::endl;
 }
 
+void test2(){
+  BOOST_LOG(rdErrorLog) << "-------------------------------------" << std::endl;
+  BOOST_LOG(rdErrorLog) << "    Test GROMOS ConformerParser." << std::endl;
+
+  ROMol *mol = SmilesToMol("CCC");
+  std::vector<std::vector<double> > coords;
+  std::string rdbase = getenv("RDBASE");
+  std::string fName = rdbase + "/Contrib/ConformerParser/test_data/water_coords_bad.trc";
+  bool ok = false;
+  try {
+    readGromosTrajectory(fName, coords, mol->getNumAtoms());
+  } catch (ValueErrorException &e) {
+	//std::cout << e.message() << std::endl;
+    ok = true;
+  }
+  TEST_ASSERT(ok);
+
+  fName = rdbase + "/Contrib/ConformerParser/test_data/water_coords_bad2.trc";
+  ok = false;
+  try {
+    readGromosTrajectory(fName, coords, mol->getNumAtoms());
+  } catch (ValueErrorException &e) {
+    //std::cout << e.message() << std::endl;
+    ok = true;
+  }
+  TEST_ASSERT(ok);
+
+  fName = rdbase + "/Contrib/ConformerParser/test_data/water_coords.trc";
+  readGromosTrajectory(fName, coords, mol->getNumAtoms());
+  TEST_ASSERT(coords.size() == 1);
+  TEST_ASSERT(coords[0].size() == 9);
+  INT_VECT res = addConformersFromList(*mol, coords);
+  TEST_ASSERT((*mol).getNumConformers() == 1);
+  TEST_ASSERT((*mol).getConformer().getNumAtoms() == 3);
+  TEST_ASSERT((*mol).getConformer(0).getAtomPos(0).x == 0.1941767);
+
+  mol->clearConformers();
+  fName = rdbase + "/Contrib/ConformerParser/test_data/water_coords2.trc";
+  readGromosTrajectory(fName, coords, mol->getNumAtoms());
+  TEST_ASSERT(coords.size() == 2);
+  TEST_ASSERT(coords[1].size() == 9);
+  res = addConformersFromList(*mol, coords);
+  TEST_ASSERT((*mol).getNumConformers() == 2);
+
+  BOOST_LOG(rdErrorLog) << "  done" << std::endl;
+}
+
 
 //-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 //
@@ -115,6 +161,7 @@ int main(){
   RDLog::InitLogs();
 #if 1
   test1();
+  test2();
 #endif
 
 }

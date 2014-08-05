@@ -54,6 +54,20 @@ namespace RDKit {
     return res;
   } 
 
+  INT_VECT AddConformersFromGromosTrajectory(ROMol &mol, std::string fName, int numConfs,
+										 bool clearConfs) {
+  if (clearConfs) {
+	mol.clearConformers();
+  }
+  std::vector<std::vector<double> > coords;
+  ConformerParser::readGromosTrajectory(fName, coords, mol.getNumAtoms());
+  INT_VECT res = ConformerParser::addConformersFromList(mol, coords, numConfs);
+  if (numConfs < 0) {
+	  numConfs = coords.size();
+  }
+  return res;
+}
+
 }
 
 BOOST_PYTHON_MODULE(rdConformerParser) {
@@ -82,6 +96,25 @@ BOOST_PYTHON_MODULE(rdConformerParser) {
               (python::arg("mol"), python::arg("traj"),
                python::arg("numConfs")=-1, python::arg("clearConfs")=true),
               docString.c_str());
+
+  docString = "Read conformations of a molecule from \n\
+ a GROMOS trajectory\n\n\
+ \n\
+ ARGUMENTS:\n\n\
+    - mol : the molecule of interest\n\
+    - traj : the filename of the trajectory \n\
+    - numConfs : number of conformations to read \n\
+                 The default (-1) reads all. \n\
+    - clearConfs : clear all existing conformations on the molecule\n\
+                     The default is true. \n\
+ \n\
+  RETURNS:\n\n\
+     IDs of the new conformations added to the molecule \n\
+\n";
+    python::def("AddConformersFromGromosTrajectory", RDKit::AddConformersFromGromosTrajectory,
+                (python::arg("mol"), python::arg("traj"),
+                 python::arg("numConfs")=-1, python::arg("clearConfs")=true),
+                docString.c_str());
 
 
 }
