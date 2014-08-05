@@ -77,6 +77,10 @@ namespace RDKit{
         errout << "Bad input file " << fName;
         throw BadFileException(errout.str());
       }
+
+      // clear coords
+      coords.resize(0);
+
       std::string tempStr;
       // title
       std::getline(inStream, tempStr);
@@ -108,6 +112,72 @@ namespace RDKit{
       }
     }
 
+    void readGromosTrajectory(std::string fName, std::vector<std::vector<double> > &coords,
+							 unsigned int numAtoms) {
+	  std::ifstream inStream(fName.c_str());
+	  if (!inStream || (inStream.bad()) ) {
+		std::ostringstream errout;
+		errout << "Bad input file " << fName;
+		throw BadFileException(errout.str());
+	  }
+
+	  // clear coords
+	  coords.resize(0);
+
+	  unsigned int numCoordsPerConf = 3 * numAtoms; // number of coordinates per conformer
+
+	  std::string tempStr;
+	  while (!inStream.eof()) {
+		  std::getline(inStream, tempStr);
+		  //std::cerr << tempStr << std::endl;
+		  if (tempStr == "TITLE") { // title block - will be ignored
+			  while(tempStr != "END") {
+				  std::getline(inStream, tempStr);
+			  }
+		  } else if (tempStr == "TIMESTEP") { // timestep block - will be ignored
+			  while(tempStr != "END") {
+				  std::getline(inStream, tempStr);
+			  }
+		  } else if (tempStr == "POSITIONRED") { // these are the positions
+			  std::vector<double> coordConf;
+			  for (unsigned int i = 0; i < numAtoms; ++i) {
+				  std::getline(inStream, tempStr);
+				  if (inStream.eof() || tempStr == "END") {
+					  throw ValueErrorException("Wrong number of coordinates");
+				  }
+				  if (tempStr.find("#") != std::string::npos) { // ignore comments
+					  --i; // reset the atom counter
+					  continue;
+				  }
+				  std::stringstream ls(tempStr);
+				  double x, y, z;
+				  if (!(ls >> x >> y >> z)) {
+					  throw ValueErrorException("Error while reading file");
+				  }
+				  // store the coordinates
+				  coordConf.push_back(x);
+				  coordConf.push_back(y);
+				  coordConf.push_back(z);
+			  }
+			  if (coordConf.size() != numCoordsPerConf) {
+				  throw ValueErrorException("Wrong number of coordinates");
+			  }
+			  std::getline(inStream, tempStr); // the END line
+			  if (tempStr != "END") {
+				  throw ValueErrorException("Wrong number of coordinates");
+			  }
+			  coords.push_back(coordConf);
+		  } else if (tempStr == "GENBOX") { // box information block - will be ignored
+			  while(tempStr != "END") {
+				  std::getline(inStream, tempStr);
+			  }
+		  } else {
+			  if (!inStream.eof()) {
+			      throw ValueErrorException("Unsupported block in file: "+tempStr+". Supported blocks are TITLE, TIMESTEP, POSITIONRED, GENBOX.");
+			  }
+		  }
+	  } // read file
+    }
 
   } // end namespace ConformerParser
 } // end namespace RDKit
