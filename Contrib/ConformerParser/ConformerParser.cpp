@@ -138,7 +138,8 @@ namespace RDKit{
 			  while(tempStr != "END") {
 				  std::getline(inStream, tempStr);
 			  }
-		  } else if (tempStr == "POSITIONRED") { // these are the positions
+		  } else if ((tempStr == "POSITIONRED") || (tempStr == "POSITION")) { 
+                          // these are the positions
 			  std::vector<double> coordConf;
 			  for (unsigned int i = 0; i < numAtoms; ++i) {
 				  std::getline(inStream, tempStr);
@@ -154,10 +155,10 @@ namespace RDKit{
 				  if (!(ls >> x >> y >> z)) {
 					  throw ValueErrorException("Error while reading file");
 				  }
-				  // store the coordinates
-				  coordConf.push_back(x);
-				  coordConf.push_back(y);
-				  coordConf.push_back(z);
+				  // store the coordinates (convert to Angstrom!)
+				  coordConf.push_back(x*10);
+				  coordConf.push_back(y*10);
+				  coordConf.push_back(z*10);
 			  }
 			  if (coordConf.size() != numCoordsPerConf) {
 				  throw ValueErrorException("Wrong number of coordinates");
@@ -167,13 +168,19 @@ namespace RDKit{
 				  throw ValueErrorException("Wrong number of coordinates");
 			  }
 			  coords.push_back(coordConf);
-		  } else if (tempStr == "GENBOX") { // box information block - will be ignored
+		  } else if ((tempStr == "VELOCITYRED") || (tempStr == "VELOCITY")) { 
+                          // velocity block - will be ignored
+			  while(tempStr != "END") {
+				  std::getline(inStream, tempStr);
+			  }
+		  } else if ((tempStr == "GENBOX") || (tempStr == "BOX")) { 
+                          // box information block - will be ignored
 			  while(tempStr != "END") {
 				  std::getline(inStream, tempStr);
 			  }
 		  } else {
 			  if (!inStream.eof()) {
-			      throw ValueErrorException("Unsupported block in file: "+tempStr+". Supported blocks are TITLE, TIMESTEP, POSITIONRED, GENBOX.");
+			      throw ValueErrorException("Unsupported block in file: "+tempStr+". Supported blocks are TITLE, TIMESTEP, POSITIONRED/POSITION, VELOCITY/VELOCITYRED, GENBOX/BOX.");
 			  }
 		  }
 	  } // read file
