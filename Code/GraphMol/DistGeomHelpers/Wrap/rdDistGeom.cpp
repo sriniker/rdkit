@@ -54,13 +54,14 @@ namespace RDKit {
   }
 
   INT_VECT EmbedMultipleConfs(ROMol &mol, unsigned int numConfs,
-			      unsigned int maxAttempts,
+			      	  	  	  unsigned int maxAttempts,
                               int seed, bool clearConfs,
-			      bool useRandomCoords,double boxSizeMult,
+                              bool useRandomCoords,double boxSizeMult,
                               bool randNegEig, unsigned int numZeroFail,
-			      double pruneRmsThresh,python::dict &coordMap,
+                              double pruneRmsThresh,python::dict &coordMap,
                               double forceTol,
-                              bool ignoreSmoothingFailures) {
+                              bool ignoreSmoothingFailures,
+                              bool useExperimentalTorsions) {
 
     std::map<int,RDGeom::Point3D> pMap;
     python::list ks = coordMap.keys();
@@ -76,10 +77,11 @@ namespace RDKit {
 
     INT_VECT res = DGeomHelpers::EmbedMultipleConfs(mol, numConfs, maxAttempts,
                                                     seed, clearConfs,
-						    useRandomCoords,boxSizeMult, 
+                                                    useRandomCoords,boxSizeMult,
                                                     randNegEig, numZeroFail,
                                                     pruneRmsThresh,pMapPtr,forceTol,
-                                                    ignoreSmoothingFailures);
+                                                    ignoreSmoothingFailures,
+                                                    useExperimentalTorsions);
 
     return res;
   }
@@ -131,7 +133,12 @@ namespace RDKit {
     dims[2] = 6;
 
     DistGeom::MultiRangeBoundsMatPtr mat(new DistGeom::MultiRangeBoundsMatrix(nats));
-    DGeomHelpers::setTopolMultiRangeBounds(mol,mat, set15bounds, scaleVDW, torsionAnglePrefLevel);
+    std::vector<std::vector<int> > expTorsionAtoms;
+    std::vector<std::pair<std::vector<double>, std::vector<double> > > expTorsionAngles;
+    std::vector<std::pair<int, int> > bonds;
+    std::vector<std::pair<int, int> > angles;
+    DGeomHelpers::setTopolMultiRangeBounds(mol, mat, bonds, angles, expTorsionAtoms, expTorsionAngles,
+    		                               set15bounds, scaleVDW, torsionAnglePrefLevel);
     PyArrayObject *res = (PyArrayObject *)PyArray_SimpleNew(3,dims,NPY_DOUBLE);
     memcpy(static_cast<void *>(res->data),
            static_cast<void *>(mat->getData()),
@@ -241,6 +248,7 @@ BOOST_PYTHON_MODULE(rdDistGeom) {
                  the distance geometry force field.\n\
     - ignoreSmoothingFailures : try to embed the molecule even if triangle smoothing\n\
                  of the bounds matrix fails.\n\
+	- useExperimentalTorsionRanges : enforce torsional ranges from experiments.\n\
  RETURNS:\n\n\
     List of new conformation IDs \n\
 \n";
@@ -249,12 +257,13 @@ BOOST_PYTHON_MODULE(rdDistGeom) {
                python::arg("maxAttempts")=0,
                python::arg("randomSeed")=-1, python::arg("clearConfs")=true,
                python::arg("useRandomCoords")=false,
-	       python::arg("boxSizeMult")=2.0,
+               python::arg("boxSizeMult")=2.0,
                python::arg("randNegEig")=true, python::arg("numZeroFail")=1,
-	       python::arg("pruneRmsThresh")=-1.0,
+               python::arg("pruneRmsThresh")=-1.0,
                python::arg("coordMap")=python::dict(),
                python::arg("forceTol")=1e-3,
-               python::arg("ignoreSmoothingFailures")=false),
+               python::arg("ignoreSmoothingFailures")=false,
+               python::arg("useExperimentalTorsionRanges")=false),
               docString.c_str());
 
   docString = "Use distance geometry to obtain multiple sets of \n\

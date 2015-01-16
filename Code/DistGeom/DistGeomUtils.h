@@ -109,6 +109,42 @@ namespace DistGeom {
                                                std::map< std::pair<int,int>,double> *extraWeights=0,
                                                double basinSizeTol=5.0);
 
+  //! Setup the error function for violation of distance bounds as a forcefield
+    /*!
+      This is only in 3D and uses the distance constraints and torsion constraints from the UFF
+
+      \param mmat             Distance bounds matrix
+      \param positions        A vector of pointers to Points to write out the resulting coordinates
+      \param expTorsionAtoms  List of groups of 4 atoms of experimental torsions
+      \param expTorsionAngles List of lower and upper torsion angles
+      \param basinSizeTol     Optional: any distance bound with a basin (distance between max and
+                              min bounds) larger than this value will not be included in the force
+                              field used to cleanup the structure.
+
+      \return a pointer to a ForceField suitable for cleaning up the violations.
+        <b>NOTE:</b> the caller is responsible for deleting this force field.
+
+    */
+    ForceFields::ForceField *construct3DForceField(const BoundsMatrix &mmat,
+                                                 RDGeom::Point3DPtrVect &positions,
+                                                 std::vector<std::pair<int, int> > &bonds,
+                                                 std::vector<std::pair<int, int> > &angles,
+                                                 std::vector<std::vector<int> > &expTorsionAtoms,
+                                                 std::vector<std::pair<double, double> > &expTorsionAngles,
+                                                 double basinSizeTol=5.0);
+
+    ForceFields::ForceField *construct3DForceField2(const BoundsMatrix &mmat,
+                                                     RDGeom::Point3DPtrVect &positions,
+                                                     std::vector<std::pair<int, int> > &bonds,
+                                                     std::vector<std::pair<int, int> > &angles,
+                                                     std::vector<std::vector<int> > &expTorsionAtoms,
+                                                     std::vector<std::pair<double, double> > &expTorsionAngles,
+                                                     double basinSizeTol=5.0);
+
+    ForceFields::ForceField *construct3DForceField3(const BoundsMatrix &mmat,
+                                                   RDGeom::Point3DPtrVect &positions,
+                                                   double basinSizeTol=5.0);
+
 }
     
 #endif

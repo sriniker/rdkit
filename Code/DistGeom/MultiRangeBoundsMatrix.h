@@ -168,7 +168,7 @@ namespace DistGeom {
     }
 
     //! Get a random "normal" BoundsMatrix
-    void getRandomBoundsMatrix(DistGeom::BoundsMatPtr mmat) {
+    void getRandomBoundsMatrix(DistGeom::BoundsMatPtr mmat, std::map<std::pair<int, int>, int > &ranges) {
       unsigned int i, j;
       for (i = 1; i < d_nRows; i++) {
         for (j = 0; j < i; j++) {
@@ -178,9 +178,19 @@ namespace DistGeom {
             int n = rand() % ub.size();
             mmat->setUpperBound(i,j,ub[n]);
             mmat->setLowerBound(i,j,getLowerBound(i,j)[n]);
+            if (i < j) { // insert with order
+              ranges.insert(std::make_pair(std::make_pair(i, j), n));
+            } else {
+              ranges.insert(std::make_pair(std::make_pair(j, i), n));
+            }
           } else { // only 1 range
             mmat->setUpperBound(i,j,ub[0]);
             mmat->setLowerBound(i,j,getLowerBound(i,j)[0]);
+            if (i < j) { // insert with order
+			  ranges.insert(std::make_pair(std::make_pair(i, j), 0));
+			} else {
+			  ranges.insert(std::make_pair(std::make_pair(j, i), 0));
+			}
           }
         }
       }

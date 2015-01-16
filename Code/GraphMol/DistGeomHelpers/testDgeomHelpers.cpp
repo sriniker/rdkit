@@ -664,19 +664,22 @@ void testIssue251() {
   delete m;
 }
 
-void testMultiRange() {
+/*void testMultiRange() {
   std::string smi = "COC=O";
   ROMol *m = SmilesToMol(smi, 0, 1);
   unsigned int nat = m->getNumAtoms();
   DistGeom::MultiRangeBoundsMatrix *multimat = new DistGeom::MultiRangeBoundsMatrix(nat);
   DistGeom::MultiRangeBoundsMatPtr pmulti(multimat);
-  DGeomHelpers::setTopolMultiRangeBounds(*m, pmulti, true, false, DGeomHelpers::TOLERANCE1);
+  std::vector<std::vector<int> > expTorsionAtoms;
+  std::vector<std::pair<std::vector<double>, std::vector<double> > > expTorsionAngles;
+  DGeomHelpers::setTopolMultiRangeBounds(*m, pmulti, expTorsionAtoms, expTorsionAngles, true, false, DGeomHelpers::TOLERANCE1);
   TEST_ASSERT(pmulti->getLowerBound(0,3).size()==1);
   TEST_ASSERT(pmulti->getUpperBound(0,3).size()==1);
   // get a random "normal" bounds matrix
   DistGeom::BoundsMatrix *mat = new DistGeom::BoundsMatrix(nat);
   DistGeom::BoundsMatPtr pmat(mat);
-  pmulti->getRandomBoundsMatrix(pmat);
+  std::map<std::pair<int, int>, int > ranges;
+  pmulti->getRandomBoundsMatrix(pmat, ranges);
   // exp. SMARTS pattern: [O:1]=[C:2]!@[O:3]~[C:4] --> upper angle = 10 deg
   TEST_ASSERT(RDKit::feq(pmat->getLowerBound(0,3), 2.67, 0.01));
   TEST_ASSERT(RDKit::feq(pmat->getUpperBound(0,3), 2.79, 0.01));
@@ -689,7 +692,9 @@ void testMultiRange2() {
   unsigned int nat = m->getNumAtoms();
   DistGeom::MultiRangeBoundsMatrix *multimat = new DistGeom::MultiRangeBoundsMatrix(nat);
   DistGeom::MultiRangeBoundsMatPtr pmulti(multimat);
-  DGeomHelpers::setTopolMultiRangeBounds(*m, pmulti, true, false, DGeomHelpers::TOLERANCE1);
+  std::vector<std::vector<int> > expTorsionAtoms;
+  std::vector<std::pair<std::vector<double>, std::vector<double> > > expTorsionAngles;
+  DGeomHelpers::setTopolMultiRangeBounds(*m, pmulti, expTorsionAtoms, expTorsionAngles, true, false, DGeomHelpers::TOLERANCE1);
   // exp. SMARTS pattern: [!#1:1][CX4H0:2]!@[OX2:3][!#1:4] --> two peaks
   TEST_ASSERT(pmulti->getLowerBound(0,5).size()==2);
   TEST_ASSERT(pmulti->getUpperBound(0,5).size()==2);
@@ -700,11 +705,12 @@ void testMultiRange2() {
   // get a random "normal" bounds matrix
   DistGeom::BoundsMatrix *mat = new DistGeom::BoundsMatrix(nat);
   DistGeom::BoundsMatPtr pmat(mat);
-  pmulti->getRandomBoundsMatrix(pmat);
+  std::map<std::pair<int, int>, int > ranges;
+  pmulti->getRandomBoundsMatrix(pmat, ranges);
   TEST_ASSERT(pmat->getLowerBound(0,5)==pmulti->getLowerBound(0,5)[0] || pmat->getLowerBound(0,5)==pmulti->getLowerBound(0,5)[1]);
   TEST_ASSERT(pmat->getUpperBound(0,5)==pmulti->getUpperBound(0,5)[0] || pmat->getUpperBound(0,5)==pmulti->getUpperBound(0,5)[1]);
   delete m;
-}
+}*/
 
 void testIssue276() {
   bool ok;
@@ -1446,13 +1452,13 @@ int main() {
   BOOST_LOG(rdInfoLog) << "\t testIssue251 \n\n";
   testIssue251();
 
-  BOOST_LOG(rdInfoLog) << "\t---------------------------------\n";
+  /*BOOST_LOG(rdInfoLog) << "\t---------------------------------\n";
   BOOST_LOG(rdInfoLog) << "\t testMultiRange \n\n";
   testMultiRange();
 
   BOOST_LOG(rdInfoLog) << "\t---------------------------------\n";
   BOOST_LOG(rdInfoLog) << "\t testMultiRange2 \n\n";
-  testMultiRange2();
+  testMultiRange2();*/
 
   BOOST_LOG(rdInfoLog) << "\t---------------------------------\n";
   BOOST_LOG(rdInfoLog) << "\t testIssue276 \n";

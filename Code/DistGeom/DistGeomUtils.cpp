@@ -20,6 +20,8 @@
 #include <Numerics/EigenSolvers/PowerEigenSolver.h>
 #include <RDGeneral/utils.h>
 #include <ForceField/ForceField.h>
+#include <ForceField/UFF/DistanceConstraint.h>
+#include <ForceField/UFF/TorsionConstraint.h>
 
 namespace DistGeom {
   const double EIGVAL_TOL=0.001;
@@ -236,6 +238,179 @@ namespace DistGeom {
         field->contribs().push_back(ForceFields::ContribPtr(contrib));
       }
     }
+    return field;
+  }
+
+  ForceFields::ForceField *construct3DForceField(const BoundsMatrix &mmat,
+                                               RDGeom::Point3DPtrVect &positions,
+                                               std::vector<std::pair<int, int> > &bonds,
+                                               std::vector<std::pair<int, int> > &angles,
+                                               std::vector<std::vector<int> > &expTorsionAtoms,
+                                               std::vector<std::pair<double, double> > &expTorsionAngles,
+                                               double basinSizeTol) {
+    unsigned int N = mmat.numRows();
+    CHECK_INVARIANT(N == positions.size(), "");
+    CHECK_INVARIANT(expTorsionAtoms.size() == expTorsionAngles.size(), "");
+    ForceFields::ForceField *field = new ForceFields::ForceField(positions[0]->dimension());
+    for (unsigned int i = 0; i < N; ++i){
+      field->positions().push_back(positions[i]);
+    }
+
+    // current angles
+    std::vector<double> currentAngles;
+    for (unsigned int t = 0; t < expTorsionAngles.size(); ++t) {
+      RDGeom::Point3D p1 = (*positions[expTorsionAtoms[t][0]]);
+      RDGeom::Point3D p2 = (*positions[expTorsionAtoms[t][1]]);
+      RDGeom::Point3D p3 = (*positions[expTorsionAtoms[t][2]]);
+      RDGeom::Point3D p4 = (*positions[expTorsionAtoms[t][3]]);
+      double ang = RDGeom::computeSignedDihedralAngle(p1, p2, p3, p4);
+      //std::cout << ang/M_PI * 180.0 << std::endl;
+      currentAngles.push_back(ang);
+    }
+
+    // torsion constraints
+    double ftorsion = 1000.0; // force constant
+    for (unsigned int t = 0; t < expTorsionAtoms.size(); ++t) {
+    	int ang1 = expTorsionAngles[t].first/M_PI * 180.0;
+    	int ang2 = expTorsionAngles[t].second/M_PI * 180.0;
+    	int i = expTorsionAtoms[t][0];
+    	int j = expTorsionAtoms[t][1];
+    	int k = expTorsionAtoms[t][2];
+    	int l = expTorsionAtoms[t][3];
+    	if (currentAngles[t] < 0) {
+    	  double tmp = -ang2;
+    	  ang2 = -ang1; ang1 = tmp;
+    	}
+    	//std::cout << ang1 << " " << ang2 << std::endl;
+    	ForceFields::UFF::TorsionConstraintContrib *contrib = new ForceFields::UFF::TorsionConstraintContrib(field, i, j, k, l, ang1, ang2, ftorsion);
+    	field->contribs().push_back(ForceFields::ContribPtr(contrib));
+    }
+
+    // 1,2 distance constraints
+	  double fdist = 100.0; // force constant
+	  std::vector<std::pair<int, int> >::iterator bi;
+	  for (bi = bonds.begin(); bi != bonds.end(); bi++) {
+		  unsigned int i = bi->first;
+		  unsigned int j = bi->second;
+		  double d = ((*positions[i]) - (*positions[j])).length();
+		  double l = d-0.01;
+		  double u = d+0.01;
+		  ForceFields::UFF::DistanceConstraintContrib *contrib = new ForceFields::UFF::DistanceConstraintContrib(field, i, j, l, u, fdist);
+		  field->contribs().push_back(ForceFields::ContribPtr(contrib));
+	  }
+
+	  // 1,3 distance constraints
+		for (bi = angles.begin(); bi != angles.end(); bi++) {
+		  unsigned int i = bi->first;
+		  unsigned int j = bi->second;
+		  double d = ((*positions[i]) - (*positions[j])).length();
+		  double l = d-0.01;
+		  double u = d+0.01;
+		  ForceFields::UFF::DistanceConstraintContrib *contrib = new ForceFields::UFF::DistanceConstraintContrib(field, i, j, l, u, fdist);
+		  field->contribs().push_back(ForceFields::ContribPtr(contrib));
+	  }
+
+    return field;
+  }
+
+  ForceFields::ForceField *construct3DForceField2(const BoundsMatrix &mmat,
+                                                 RDGeom::Point3DPtrVect &positions,
+                                                 std::vector<std::pair<int, int> > &bonds,
+                                                 std::vector<std::pair<int, int> > &angles,
+                                                 std::vector<std::vector<int> > &expTorsionAtoms,
+                                                 std::vector<std::pair<double, double> > &expTorsionAngles,
+                                                 double basinSizeTol) {
+      unsigned int N = mmat.numRows();
+      CHECK_INVARIANT(N == positions.size(), "");
+      CHECK_INVARIANT(expTorsionAtoms.size() == expTorsionAngles.size(), "");
+      ForceFields::ForceField *field = new ForceFields::ForceField(positions[0]->dimension());
+      for (unsigned int i = 0; i < N; ++i){
+        field->positions().push_back(positions[i]);
+      }
+
+      // torsion constraints
+      double ftorsion = 1000.0; // force constant
+      for (unsigned int t = 0; t < expTorsionAtoms.size(); ++t) {
+      	int ang1 = expTorsionAngles[t].first;
+      	int ang2 = expTorsionAngles[t].second;
+      	int i = expTorsionAtoms[t][0];
+      	int j = expTorsionAtoms[t][1];
+      	int k = expTorsionAtoms[t][2];
+      	int l = expTorsionAtoms[t][3];
+      	ForceFields::UFF::TorsionConstraintContrib *contrib = new ForceFields::UFF::TorsionConstraintContrib(field, i, j, k, l, ang1, ang2, ftorsion);
+      	field->contribs().push_back(ForceFields::ContribPtr(contrib));
+      } // torsion constraints
+
+
+      double fdist = 100.0; // force constant
+      // 1,2 distance constraints
+      std::vector<std::pair<int, int> >::iterator bi;
+      for (bi = bonds.begin(); bi != bonds.end(); bi++) {
+    	  unsigned int i = bi->first;
+    	  unsigned int j = bi->second;
+    	  double d = ((*positions[i]) - (*positions[j])).length();
+		  double l = d-0.01;
+		  double u = d+0.01;
+		  ForceFields::UFF::DistanceConstraintContrib *contrib = new ForceFields::UFF::DistanceConstraintContrib(field, i, j, l, u, fdist);
+		  field->contribs().push_back(ForceFields::ContribPtr(contrib));
+      }
+
+      // 1,3 distance constraints
+		for (bi = angles.begin(); bi != angles.end(); bi++) {
+		  unsigned int i = bi->first;
+		  unsigned int j = bi->second;
+		  double d = ((*positions[i]) - (*positions[j])).length();
+		  double l = d-0.01;
+		  double u = d+0.01;
+		  ForceFields::UFF::DistanceConstraintContrib *contrib = new ForceFields::UFF::DistanceConstraintContrib(field, i, j, l, u, fdist);
+		  field->contribs().push_back(ForceFields::ContribPtr(contrib));
+	  }
+
+  	  /*for (unsigned int i = 0; i < N-2; ++i) {
+	  	  for (unsigned int j = i+1; j <= i+2; ++j) { // only add 1-2 and 1-3 distances
+			double d = ((*positions[i]) - (*positions[j])).length();
+			double l = d-0.01;
+			double u = d+0.01;
+			bool includeIt = false;
+			if (u-l <= basinSizeTol) {
+			  includeIt = true;
+			}
+			if (includeIt) {
+			  ForceFields::UFF::DistanceConstraintContrib *contrib = new ForceFields::UFF::DistanceConstraintContrib(field, i, j, l, u, fdist);
+			  field->contribs().push_back(ForceFields::ContribPtr(contrib));
+			}
+		  }
+  	  } // distance constraints*/
+
+      return field;
+    }
+
+  ForceFields::ForceField *construct3DForceField3(const BoundsMatrix &mmat,
+                                               RDGeom::Point3DPtrVect &positions,
+                                               double basinSizeTol) {
+    unsigned int N = mmat.numRows();
+    CHECK_INVARIANT(N == positions.size(), "");
+    ForceFields::ForceField *field = new ForceFields::ForceField(positions[0]->dimension());
+    for (unsigned int i = 0; i < N; ++i){
+      field->positions().push_back(positions[i]);
+    }
+
+    double fdist = 100.0; // force constant
+	for (unsigned int i = 1; i < N; ++i) {
+	  	for (unsigned int j = 0; j < i; ++j) {
+	  		double l = mmat.getLowerBound(i,j);
+	  		double u = mmat.getUpperBound(i,j);
+			bool includeIt = false;
+			if (u-l <= basinSizeTol) {
+			  includeIt = true;
+			}
+			if (includeIt) {
+			  ForceFields::UFF::DistanceConstraintContrib *contrib = new ForceFields::UFF::DistanceConstraintContrib(field, i, j, l, u, fdist);
+			  field->contribs().push_back(ForceFields::ContribPtr(contrib));
+			}
+		  }
+	} // distance constraints
+
     return field;
   }
 }

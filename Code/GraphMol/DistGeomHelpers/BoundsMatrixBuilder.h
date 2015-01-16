@@ -71,6 +71,11 @@ namespace RDKit {
     void setTopolBounds(const ROMol &mol, DistGeom::BoundsMatPtr mmat,
 			bool set15bounds=true, bool scaleVDW=false);
 
+    void setTopolBounds(const ROMol &mol, DistGeom::BoundsMatPtr mmat,
+    		    std::vector<std::pair<int,int> > &bonds,
+    		    std::vector<std::pair<int,int> > &angles,
+    			bool set15bounds=true, bool scaleVDW=false);
+
     //! Set upper and lower distance bounds between atoms in a molecule based on topology
     /*!
       This consists of setting 1-2, 1-3 and 1-4 distance based on bond lengths,
@@ -82,6 +87,8 @@ namespace RDKit {
 
       \param mol          The molecule of interest
       \param mmat         Multi-range bounds matrix to the bounds are written
+      \param expTorsionAtoms
+      \param expTorsionAngles
       \param set15bounds  If true try to set 1-5 bounds also based on topology
       \param scaleVDW     If true scale the sum of the vdW radii while setting lower bounds
                           so that a smaller value (0.7*(vdw1 + vdw2) ) is used for paths
@@ -97,8 +104,16 @@ namespace RDKit {
       recompute the bounds matrix with no 1-5 bounds and with vdW scaling.
     */
     void setTopolMultiRangeBounds(const ROMol &mol, DistGeom::MultiRangeBoundsMatPtr mmat,
+    							  std::vector<std::pair<int, int> > &bonds,
+    		                      std::vector<std::pair<int, int> > &angles,
+    							  std::vector<std::vector<int> > &expTorsionAtoms,
+    		    		          std::vector<std::pair<std::vector<double>, std::vector<double> > > &expTorsionAngles,
                                   bool set15bounds=true, bool scaleVDW=false,
                                   ExpTorsionLevel level=TOLERANCE1);
+
+    //! Get the experimental torsional angles in a molecule
+    void getExperimentalTorsions(const ROMol &mol, std::vector<std::vector<int> > &expTorsionAtoms,
+        		std::vector<std::pair<std::vector<double>, std::vector<double> > > &expTorsionAngles);
   }
 }
 #endif
