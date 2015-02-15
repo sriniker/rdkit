@@ -22,6 +22,7 @@
 #include <ForceField/ForceField.h>
 #include <ForceField/UFF/DistanceConstraint.h>
 #include <ForceField/UFF/TorsionConstraint.h>
+#include <ForceField/MMFF/TorsionAngle.h>
 
 namespace DistGeom {
   const double EIGVAL_TOL=0.001;
@@ -271,8 +272,8 @@ namespace DistGeom {
     // torsion constraints
     double ftorsion = 1000.0; // force constant
     for (unsigned int t = 0; t < expTorsionAtoms.size(); ++t) {
-    	int ang1 = expTorsionAngles[t].first/M_PI * 180.0;
-    	int ang2 = expTorsionAngles[t].second/M_PI * 180.0;
+    	double ang1 = expTorsionAngles[t].first/M_PI * 180.0;
+    	double ang2 = expTorsionAngles[t].second/M_PI * 180.0;
     	int i = expTorsionAtoms[t][0];
     	int j = expTorsionAtoms[t][1];
     	int k = expTorsionAtoms[t][2];
@@ -331,8 +332,8 @@ namespace DistGeom {
       // torsion constraints
       double ftorsion = 1000.0; // force constant
       for (unsigned int t = 0; t < expTorsionAtoms.size(); ++t) {
-      	int ang1 = expTorsionAngles[t].first;
-      	int ang2 = expTorsionAngles[t].second;
+      	double ang1 = expTorsionAngles[t].first;
+      	double ang2 = expTorsionAngles[t].second;
       	int i = expTorsionAtoms[t][0];
       	int j = expTorsionAtoms[t][1];
       	int k = expTorsionAtoms[t][2];
@@ -340,7 +341,6 @@ namespace DistGeom {
       	ForceFields::UFF::TorsionConstraintContrib *contrib = new ForceFields::UFF::TorsionConstraintContrib(field, i, j, k, l, ang1, ang2, ftorsion);
       	field->contribs().push_back(ForceFields::ContribPtr(contrib));
       } // torsion constraints
-
 
       double fdist = 100.0; // force constant
       // 1,2 distance constraints

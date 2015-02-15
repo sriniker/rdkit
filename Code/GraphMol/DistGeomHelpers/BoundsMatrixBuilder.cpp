@@ -2006,7 +2006,7 @@ namespace RDKit {
 			aid1 = (*rii)[i];
 			aid2 = (*rii)[(i+1)%rSize];
 			aid3 = (*rii)[(i+2)%rSize];
-			aid4 = (*rii)[(i+2)%rSize];
+			aid4 = (*rii)[(i+3)%rSize];
 			// if all 4 atoms are aromatic, add improper torsion
 			if (mol.getAtomWithIdx(aid1)->getIsAromatic() && mol.getAtomWithIdx(aid2)->getIsAromatic()
 					&& mol.getAtomWithIdx(aid3)->getIsAromatic() && mol.getAtomWithIdx(aid4)->getIsAromatic()) {

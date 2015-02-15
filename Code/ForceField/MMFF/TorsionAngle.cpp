@@ -113,6 +113,26 @@ namespace ForceFields {
       d_V3 = mmffTorParams->V3;
     }
 
+    TorsionAngleContrib::TorsionAngleContrib(ForceField *owner, unsigned int idx1, unsigned int idx2,
+                  unsigned int idx3, unsigned int idx4, const double V1, const double V2, const double V3) {
+    	  PRECONDITION(owner, "bad owner");
+		  PRECONDITION((idx1 != idx2) && (idx1 != idx3) && (idx1 != idx4)
+			&& (idx2 != idx3) && (idx2 != idx4) && (idx3 != idx4), "degenerate points");
+		  RANGE_CHECK(0, idx1, owner->positions().size() - 1);
+		  RANGE_CHECK(0, idx2, owner->positions().size() - 1);
+		  RANGE_CHECK(0, idx3, owner->positions().size() - 1);
+		  RANGE_CHECK(0, idx4, owner->positions().size() - 1);
+
+		  dp_forceField = owner;
+		  d_at1Idx = idx1;
+		  d_at2Idx = idx2;
+		  d_at3Idx = idx3;
+		  d_at4Idx = idx4;
+		  d_V1 = V1;
+		  d_V2 = V2;
+		  d_V3 = V3;
+    }
+
   
     double TorsionAngleContrib::getEnergy(double *pos) const
     {

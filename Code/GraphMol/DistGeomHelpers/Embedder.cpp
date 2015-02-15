@@ -622,7 +622,7 @@ namespace RDKit {
         // now we adjust the bounds matrix
 		//adjustBoundsMatFromCoordMap(mmat, positions.size(), &coordMap);
 
-        // create the force field
+		// create the force field
 		ForceFields::ForceField *field = DistGeom::construct3DForceField2(*mmat, positions3D,
 																		bonds, angles,
 																		expTorsionAtoms,
