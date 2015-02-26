@@ -138,7 +138,7 @@ namespace DistGeom {
                                                      std::vector<std::pair<int, int> > &bonds,
                                                      std::vector<std::pair<int, int> > &angles,
                                                      std::vector<std::vector<int> > &expTorsionAtoms,
-                                                     std::vector<std::pair<double, double> > &expTorsionAngles,
+                                                     std::vector<std::vector<double> > &expTorsionAngles,
                                                      double basinSizeTol=5.0);
 
     ForceFields::ForceField *construct3DForceField3(const BoundsMatrix &mmat,

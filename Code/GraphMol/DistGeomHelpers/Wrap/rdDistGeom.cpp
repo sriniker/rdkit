@@ -137,8 +137,8 @@ namespace RDKit {
     std::vector<std::pair<std::vector<double>, std::vector<double> > > expTorsionAngles;
     std::vector<std::pair<int, int> > bonds;
     std::vector<std::pair<int, int> > angles;
-    DGeomHelpers::setTopolMultiRangeBounds(mol, mat, bonds, angles, expTorsionAtoms, expTorsionAngles,
-    		                               set15bounds, scaleVDW, torsionAnglePrefLevel);
+    //DGeomHelpers::setTopolMultiRangeBounds(mol, mat, bonds, angles, expTorsionAtoms, expTorsionAngles,
+    //		                               set15bounds, scaleVDW, torsionAnglePrefLevel);
     PyArrayObject *res = (PyArrayObject *)PyArray_SimpleNew(3,dims,NPY_DOUBLE);
     memcpy(static_cast<void *>(res->data),
            static_cast<void *>(mat->getData()),
