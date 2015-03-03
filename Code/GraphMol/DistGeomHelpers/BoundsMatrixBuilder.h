@@ -78,7 +78,7 @@ namespace RDKit {
 
     //! Get the experimental torsional angles in a molecule
     void getExperimentalTorsions(const ROMol &mol, std::vector<std::vector<int> > &expTorsionAtoms,
-        		std::vector<std::vector<double> > &expTorsionAngles);
+        		std::vector<std::pair<std::vector<int>, std::vector<double> > > &expTorsionAngles);
   }
 }
 #endif

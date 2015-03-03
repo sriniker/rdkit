@@ -6,7 +6,7 @@ rdkit_library(ForceField
               UFF/TorsionConstraint.cpp UFF/PositionConstraint.cpp
               UFF/Params.cpp 
               MMFF/AngleBend.cpp MMFF/BondStretch.cpp MMFF/StretchBend.cpp
-              MMFF/OopBend.cpp MMFF/TorsionAngle.cpp MMFF/Nonbonded.cpp
+              MMFF/OopBend.cpp MMFF/TorsionAngle.cpp MMFF/TorsionAngleM6.cpp MMFF/Nonbonded.cpp
               MMFF/DistanceConstraint.cpp MMFF/AngleConstraint.cpp
               MMFF/TorsionConstraint.cpp MMFF/PositionConstraint.cpp
               MMFF/Params.cpp
@@ -32,6 +32,7 @@ rdkit_headers(MMFF/AngleBend.h
               MMFF/StretchBend.h
               MMFF/OopBend.h
               MMFF/TorsionAngle.h
+              MMFF/TorsionAngleM6.h
               MMFF/Nonbonded.h
               MMFF/Contribs.h
               MMFF/DistanceConstraint.h

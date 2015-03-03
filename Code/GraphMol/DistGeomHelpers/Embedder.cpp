@@ -269,7 +269,7 @@ namespace RDKit {
                           std::vector<std::pair<int, int> > &bonds,
                           std::vector<std::pair<int, int> > &angles,
                           std::vector<std::vector<int> > &expTorsionAtoms,
-                          std::vector<std::vector<double> > &expTorsionAngles) {
+                          std::vector<std::pair<std::vector<int>, std::vector<double> > > &expTorsionAngles) {
         // the minimization using torsion constraints for the experimental torsions
 
 		// convert to 3D positions and create coordMap
@@ -402,7 +402,7 @@ namespace RDKit {
         double tol=0.0;
 
         std::vector<std::vector<int> > expTorsionAtoms;
-		std::vector<std::vector<double> > expTorsionAngles;
+		std::vector<std::pair<std::vector<int>, std::vector<double> > > expTorsionAngles;
 		std::vector<std::pair<int, int> > bonds;
 		std::vector<std::pair<int, int> > angles;
 		if (useExperimentalTorsionRanges) {

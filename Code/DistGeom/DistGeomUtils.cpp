@@ -23,6 +23,7 @@
 #include <ForceField/UFF/DistanceConstraint.h>
 #include <ForceField/UFF/TorsionConstraint.h>
 #include <ForceField/MMFF/TorsionAngle.h>
+#include <ForceField/MMFF/TorsionAngleM6.h>
 
 namespace DistGeom {
   const double EIGVAL_TOL=0.001;
@@ -319,7 +320,7 @@ namespace DistGeom {
                                                  std::vector<std::pair<int, int> > &bonds,
                                                  std::vector<std::pair<int, int> > &angles,
                                                  std::vector<std::vector<int> > &expTorsionAtoms,
-                                                 std::vector<std::vector<double> > &expTorsionAngles,
+                                                 std::vector<std::pair<std::vector<int>, std::vector<double> > > &expTorsionAngles,
                                                  double basinSizeTol) {
       unsigned int N = mmat.numRows();
       CHECK_INVARIANT(N == positions.size(), "");
@@ -331,13 +332,12 @@ namespace DistGeom {
 
       // torsion constraints
       for (unsigned int t = 0; t < expTorsionAtoms.size(); ++t) {
-      	double V1 = expTorsionAngles[t][0]; double V2 = expTorsionAngles[t][1];
-      	double V3 = expTorsionAngles[t][2]; double delta = expTorsionAngles[t][3];
       	int i = expTorsionAtoms[t][0];
       	int j = expTorsionAtoms[t][1];
       	int k = expTorsionAtoms[t][2];
       	int l = expTorsionAtoms[t][3];
-      	ForceFields::MMFF::TorsionAngleContrib *contrib = new ForceFields::MMFF::TorsionAngleContrib(field, i, j, k, l, V1, V2, V3, delta);
+      	// expTorsionAngles[t][0] = (signs, V's)
+      	ForceFields::MMFF::TorsionAngleContribM6 *contrib = new ForceFields::MMFF::TorsionAngleContribM6(field, i, j, k, l, expTorsionAngles[t].second, expTorsionAngles[t].first);
       	field->contribs().push_back(ForceFields::ContribPtr(contrib));
       } // torsion constraints
 

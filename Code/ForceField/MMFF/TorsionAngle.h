@@ -43,12 +43,12 @@ namespace ForceFields {
       TorsionAngleContrib(ForceField *owner, unsigned int idx1, unsigned int idx2,
         unsigned int idx3, unsigned int idx4, const MMFFTor *mmffTorParams);
       TorsionAngleContrib(ForceField *owner, unsigned int idx1, unsigned int idx2,
-              unsigned int idx3, unsigned int idx4, const double V1, const double V2, const double V3, const double delta);
+              unsigned int idx3, unsigned int idx4, const double V1, const double V2, const double V3);
       double getEnergy(double *pos) const;
       void getGrad(double *pos, double *grad) const;
     private:
       int d_at1Idx, d_at2Idx, d_at3Idx, d_at4Idx;
-      double d_V1, d_V2, d_V3, d_delta;
+      double d_V1, d_V2, d_V3;
     };
 
     namespace Utils {

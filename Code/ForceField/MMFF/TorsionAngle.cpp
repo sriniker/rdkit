@@ -111,12 +111,10 @@ namespace ForceFields {
       d_V1 = mmffTorParams->V1;
       d_V2 = mmffTorParams->V2;
       d_V3 = mmffTorParams->V3;
-      d_delta = 0.0;
     }
 
     TorsionAngleContrib::TorsionAngleContrib(ForceField *owner, unsigned int idx1, unsigned int idx2,
-                  unsigned int idx3, unsigned int idx4, const double V1, const double V2, const double V3,
-                  const double delta) {
+                  unsigned int idx3, unsigned int idx4, const double V1, const double V2, const double V3) {
     	  PRECONDITION(owner, "bad owner");
 		  PRECONDITION((idx1 != idx2) && (idx1 != idx3) && (idx1 != idx4)
 			&& (idx2 != idx3) && (idx2 != idx4) && (idx3 != idx4), "degenerate points");
@@ -133,7 +131,6 @@ namespace ForceFields {
 		  d_V1 = V1;
 		  d_V2 = V2;
 		  d_V3 = V3;
-		  d_delta = delta;
     }
 
   
@@ -151,9 +148,8 @@ namespace ForceFields {
       RDGeom::Point3D lPoint(pos[3 * d_at4Idx],
         pos[3 * d_at4Idx + 1], pos[3 * d_at4Idx + 2]);
 
-      double phi = acos(Utils::calcTorsionCosPhi(iPoint, jPoint, kPoint, lPoint))-d_delta;
-
-      return Utils::calcTorsionEnergy(d_V1, d_V2, d_V3, cos(phi));
+      return Utils::calcTorsionEnergy(d_V1, d_V2, d_V3,
+    		  Utils::calcTorsionCosPhi(iPoint, jPoint, kPoint, lPoint));
     }
 
     void TorsionAngleContrib::getGrad(double *pos, double *grad) const
@@ -197,8 +193,6 @@ namespace ForceFields {
       t[0] /= d[0];
       t[1] /= d[1];
       double cosPhi = t[0].dotProduct(t[1]);
-      double phi = acos(cosPhi) - d_delta;
-      cosPhi = cos(phi);
       clipToOne(cosPhi);
       double sinPhiSq = 1.0 - cosPhi * cosPhi;
       double sinPhi = ((sinPhiSq > 0.0) ? sqrt(sinPhiSq) : 0.0);
