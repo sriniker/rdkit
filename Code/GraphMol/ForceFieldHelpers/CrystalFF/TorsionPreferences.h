@@ -22,7 +22,7 @@ void getExperimentalTorsions(
     std::vector<std::pair<std::vector<int>, std::vector<double> > > &
         expTorsionAngles,
     std::vector<std::vector<int> > &improperAtoms, bool useExpTorsions = false,
-    bool useBasicKnowledge = false, bool verbose = false);
+    bool useBasicKnowledge = false, bool verbose = false, int version = 1);
 }
 }
 
