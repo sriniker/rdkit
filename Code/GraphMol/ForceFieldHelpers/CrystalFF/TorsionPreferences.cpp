@@ -34,6 +34,7 @@ using namespace RDKit;
 /* SMARTS patterns for experimental torsion angle preferences
  * Version 1 taken from J. Med. Chem. 56, 1026-2028 (2013)
  * Version 2 taken from J. Chem. Inf. Model. 56, 1 (2016)
+ * Version 3 = Version 2 plus patterns for aliphatic rings
  *
  * torsion-angle potential form:
  * V = V1*(1 + s1*cos(1x)) + V2*(1 + s2*cos(2x)) + V3*(1 + s3*cos(1x))
@@ -43,6 +44,7 @@ using namespace RDKit;
  */
 #include "torsionPreferences_v1.in"
 #include "torsionPreferences_v2.in"
+#include "torsionPreferences_v3.in"
 
 //! A structure used to the experimental torsion patterns
 struct ExpTorsionAngle {
@@ -76,7 +78,9 @@ const ExpTorsionAngleCollection *ExpTorsionAngleCollection::getParams(
     int version, const std::string &paramData) {
   std::string params;
   if (paramData == "") {
-    if (version == 2) {
+    if (version == 3) {
+          params = torsionPreferencesV3;
+    } else if (version == 2) {
       params = torsionPreferencesV2;
     } else {
       params = torsionPreferencesV1;

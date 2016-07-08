@@ -25,12 +25,16 @@
 #include <ForceField/UFF/Inversion.h>
 #include <GraphMol/ForceFieldHelpers/CrystalFF/TorsionAngleM6.h>
 #include <boost/dynamic_bitset.hpp>
+#include <boost/math/distributions.hpp>
 
 namespace DistGeom {
 const double EIGVAL_TOL = 0.001;
+const double beta_param = 0.5; // alpha = beta
+boost::math::beta_distribution<> distBeta(beta_param, beta_param);
 
 double pickRandomDistMat(const BoundsMatrix &mmat,
-                         RDNumeric::SymmMatrix<double> &distMat, int seed) {
+                         RDNumeric::SymmMatrix<double> &distMat,
+                         int seed) {
   if (seed > 0) {
     RDKit::getRandomGenerator(seed);
   }
@@ -39,6 +43,43 @@ double pickRandomDistMat(const BoundsMatrix &mmat,
 
 double pickRandomDistMat(const BoundsMatrix &mmat,
                          RDNumeric::SymmMatrix<double> &distMat,
+                         const std::vector<std::vector<int> > &pairs14, int seed) {
+  if (seed > 0) {
+    RDKit::getRandomGenerator(seed);
+  }
+  return pickRandomDistMat(mmat, distMat, pairs14, RDKit::getDoubleRandomSource());
+}
+
+double pickRandomDistMat(const BoundsMatrix &mmat,
+                         RDNumeric::SymmMatrix<double> &distMat,
+                         RDKit::double_source_type &rng) {
+  // make sure the sizes match up
+    unsigned int npt = mmat.numRows();
+    CHECK_INVARIANT(npt == distMat.numRows(), "Size mismatch");
+
+    double largestVal = -1.0;
+    double *ddata = distMat.getData();
+    for (unsigned int i = 1; i < npt; i++) {
+      unsigned int id = i * (i + 1) / 2;
+      for (unsigned int j = 0; j < i; j++) {
+        double ub = mmat.getUpperBound(i, j);
+        double lb = mmat.getLowerBound(i, j);
+        CHECK_INVARIANT(ub >= lb, "");
+        double rval = rng();
+        // std::cerr<<i<<"-"<<j<<": "<<rval<<std::endl;
+        double d = lb + (rval) * (ub - lb);
+        ddata[id + j] = d;
+        if (d > largestVal) {
+          largestVal = d;
+        }
+      }
+    }
+    return largestVal;
+}
+
+double pickRandomDistMat(const BoundsMatrix &mmat,
+                         RDNumeric::SymmMatrix<double> &distMat,
+                         const std::vector<std::vector<int> > &pairs14,
                          RDKit::double_source_type &rng) {
   // make sure the sizes match up
   unsigned int npt = mmat.numRows();
@@ -53,6 +94,10 @@ double pickRandomDistMat(const BoundsMatrix &mmat,
       double lb = mmat.getLowerBound(i, j);
       CHECK_INVARIANT(ub >= lb, "");
       double rval = rng();
+      if (pairs14[i][j]) {
+        rval = boost::math::quantile(distBeta, rval);
+        //std::cerr<<i<<"-"<<j<<": "<<rval<<std::endl;
+      }
       // std::cerr<<i<<"-"<<j<<": "<<rval<<std::endl;
       double d = lb + (rval) * (ub - lb);
       ddata[id + j] = d;

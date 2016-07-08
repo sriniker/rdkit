@@ -29,7 +29,7 @@ int EmbedMolecule(ROMol &mol, unsigned int maxAttempts, int seed,
                   python::dict &coordMap, double forceTol,
                   bool ignoreSmoothingFailures, bool enforceChirality,
                   bool useExpTorsionAnglePrefs, bool useBasicKnowledge,
-                  bool printExpTorsionAngles) {
+                  bool printExpTorsionAngles, int ETversion) {
   std::map<int, RDGeom::Point3D> pMap;
   python::list ks = coordMap.keys();
   unsigned int nKeys = python::extract<unsigned int>(ks.attr("__len__")());
@@ -49,7 +49,7 @@ int EmbedMolecule(ROMol &mol, unsigned int maxAttempts, int seed,
         mol, maxAttempts, seed, clearConfs, useRandomCoords, boxSizeMult,
         randNegEig, numZeroFail, pMapPtr, forceTol, ignoreSmoothingFailures,
         enforceChirality, useExpTorsionAnglePrefs, useBasicKnowledge,
-        printExpTorsionAngles);
+        printExpTorsionAngles, ETversion);
   }
   return res;
 }
@@ -60,7 +60,7 @@ INT_VECT EmbedMultipleConfs(
     unsigned int numZeroFail, double pruneRmsThresh, python::dict &coordMap,
     double forceTol, bool ignoreSmoothingFailures, bool enforceChirality,
     int numThreads, bool useExpTorsionAnglePrefs, bool useBasicKnowledge,
-    bool printExpTorsionAngles) {
+    bool printExpTorsionAngles, int ETversion) {
   std::map<int, RDGeom::Point3D> pMap;
   python::list ks = coordMap.keys();
   unsigned int nKeys = python::extract<unsigned int>(ks.attr("__len__")());
@@ -80,7 +80,8 @@ INT_VECT EmbedMultipleConfs(
         mol, res, numConfs, numThreads, maxAttempts, seed, clearConfs,
         useRandomCoords, boxSizeMult, randNegEig, numZeroFail, pruneRmsThresh,
         pMapPtr, forceTol, ignoreSmoothingFailures, enforceChirality,
-        useExpTorsionAnglePrefs, useBasicKnowledge, printExpTorsionAngles);
+        useExpTorsionAnglePrefs, useBasicKnowledge, printExpTorsionAngles,
+        ETversion);
   }
   return res;
 }
@@ -147,6 +148,7 @@ BOOST_PYTHON_MODULE(rdDistGeom) {
     - useExpTorsionAnglePrefs : impose experimental torsion angle preferences\n\
     - useBasicKnowledge : impose basic knowledge such as flat rings\n\
     - printExpTorsionAngles : print the output from the experimental torsion angles\n\
+    - ETversion : version of the experimental torsion angles to be used (default: 1)\n\
 \n\
  RETURNS:\n\n\
     ID of the new conformation added to the molecule \n\
@@ -162,7 +164,8 @@ BOOST_PYTHON_MODULE(rdDistGeom) {
        python::arg("enforceChirality") = true,
        python::arg("useExpTorsionAnglePrefs") = false,
        python::arg("useBasicKnowledge") = false,
-       python::arg("printExpTorsionAngles") = false),
+       python::arg("printExpTorsionAngles") = false,
+       python::arg("ETversion") = 1),
       docString.c_str());
 
   docString =
@@ -213,6 +216,7 @@ BOOST_PYTHON_MODULE(rdDistGeom) {
     - useExpTorsionAnglePrefs : impose experimental torsion angle preferences\n\
     - useBasicKnowledge : impose basic knowledge such as flat rings\n\
     - printExpTorsionAngles : print the output from the experimental torsion angles\n\
+    - ETversion : version of the experimental torsion angles to be used (default: 1)\n\
  RETURNS:\n\n\
     List of new conformation IDs \n\
 \n";
@@ -228,7 +232,8 @@ BOOST_PYTHON_MODULE(rdDistGeom) {
        python::arg("enforceChirality") = true, python::arg("numThreads") = 1,
        python::arg("useExpTorsionAnglePrefs") = false,
        python::arg("useBasicKnowledge") = false,
-       python::arg("printExpTorsionAngles") = false),
+       python::arg("printExpTorsionAngles") = false,
+       python::arg("ETversion") = 1),
       docString.c_str());
 
   docString =

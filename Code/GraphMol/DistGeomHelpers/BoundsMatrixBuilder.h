@@ -54,11 +54,16 @@ void initBoundsMat(DistGeom::BoundsMatPtr mmat, double defaultMin = 0.0,
 */
 void setTopolBounds(const ROMol &mol, DistGeom::BoundsMatPtr mmat,
                     bool set15bounds = true, bool scaleVDW = false);
+/*! Overload */
+void setTopolBounds(const ROMol &mol, DistGeom::BoundsMatPtr mmat,
+                    std::vector<std::vector<int> > &pairs14,
+                    bool set15bounds = true, bool scaleVDW = false);
 
 /*! Overload for experimental torsion angle preferences */
 void setTopolBounds(const ROMol &mol, DistGeom::BoundsMatPtr mmat,
                     std::vector<std::pair<int, int> > &bonds,
                     std::vector<std::vector<int> > &angles,
+                    std::vector<std::vector<int> > &pairs14,
                     bool set15bounds = true, bool scaleVDW = false);
 }
 }

@@ -1249,8 +1249,46 @@ void setTopolBounds(const ROMol &mol, DistGeom::BoundsMatPtr mmat,
 }
 
 void setTopolBounds(const ROMol &mol, DistGeom::BoundsMatPtr mmat,
+                    std::vector<std::vector<int> > &pairs14,
+                    bool set15bounds, bool scaleVDW) {
+  PRECONDITION(mmat.get(), "bad pointer");
+  unsigned int nb = mol.getNumBonds();
+  unsigned int na = mol.getNumAtoms();
+  if (!na) {
+    throw ValueErrorException("molecule has no atoms");
+  }
+  ComputedData accumData(na, nb);
+  double *distMatrix = 0;
+  distMatrix = MolOps::getDistanceMat(mol);
+
+  set12Bounds(mol, mmat, accumData);
+  set13Bounds(mol, mmat, accumData);
+
+  set14Bounds(mol, mmat, accumData, distMatrix);
+
+  // store the 1,4 interactions
+  unsigned int aid1, aid2, aid3, aid4;
+  BOOST_FOREACH (Path14Configuration &path14, accumData.paths14) {
+    aid2 = accumData.bondAdj->getVal(path14.bid1, path14.bid2);
+    aid1 = mol.getBondWithIdx(path14.bid1)->getOtherAtomIdx(aid2);
+    aid3 = accumData.bondAdj->getVal(path14.bid2, path14.bid3);
+    aid4 = mol.getBondWithIdx(path14.bid3)->getOtherAtomIdx(aid3);
+    pairs14[aid1][aid4] = 1;
+    //std::cerr << "1,4-pair: " << aid1 << " " << aid4 << std::endl;
+  }
+
+  if (set15bounds) {
+    set15Bounds(mol, mmat, accumData, distMatrix);
+  }
+
+  setLowerBoundVDW(mol, mmat, scaleVDW, distMatrix);
+}
+
+void setTopolBounds(const ROMol &mol, DistGeom::BoundsMatPtr mmat,
                     std::vector<std::pair<int, int> > &bonds,
-                    std::vector<std::vector<int> > &angles, bool set15bounds,
+                    std::vector<std::vector<int> > &angles,
+                    std::vector<std::vector<int> > &pairs14,
+                    bool set15bounds,
                     bool scaleVDW) {
   PRECONDITION(mmat.get(), "bad pointer");
   bonds.clear();
@@ -1314,6 +1352,17 @@ void setTopolBounds(const ROMol &mol, DistGeom::BoundsMatPtr mmat,
   }
 
   set14Bounds(mol, mmat, accumData, distMatrix);
+
+  // store the 1,4 interactions
+  unsigned int aid1, aid2, aid3, aid4;
+  BOOST_FOREACH (Path14Configuration &path14, accumData.paths14) {
+    aid2 = accumData.bondAdj->getVal(path14.bid1, path14.bid2);
+    aid1 = mol.getBondWithIdx(path14.bid1)->getOtherAtomIdx(aid2);
+    aid3 = accumData.bondAdj->getVal(path14.bid2, path14.bid3);
+    aid4 = mol.getBondWithIdx(path14.bid3)->getOtherAtomIdx(aid3);
+    pairs14[aid1][aid4] = 1;
+    //std::cerr << "1,4-pair: " << aid1 << " " << aid4 << std::endl;
+  }
 
   if (set15bounds) {
     set15Bounds(mol, mmat, accumData, distMatrix);
