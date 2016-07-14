@@ -29,8 +29,8 @@
 
 namespace DistGeom {
 const double EIGVAL_TOL = 0.001;
-const double beta_param = 0.5; // alpha = beta
-boost::math::beta_distribution<> distBeta(beta_param, beta_param);
+boost::math::beta_distribution<> distBeta(0.5, 0.5);
+boost::math::beta_distribution<> distBeta2(5.0, 2.0);
 
 double pickRandomDistMat(const BoundsMatrix &mmat,
                          RDNumeric::SymmMatrix<double> &distMat,
@@ -43,11 +43,11 @@ double pickRandomDistMat(const BoundsMatrix &mmat,
 
 double pickRandomDistMat(const BoundsMatrix &mmat,
                          RDNumeric::SymmMatrix<double> &distMat,
-                         const std::vector<std::vector<int> > &pairs14, int seed) {
+                         const std::vector<std::vector<int> > &pairs, int seed) {
   if (seed > 0) {
     RDKit::getRandomGenerator(seed);
   }
-  return pickRandomDistMat(mmat, distMat, pairs14, RDKit::getDoubleRandomSource());
+  return pickRandomDistMat(mmat, distMat, pairs, RDKit::getDoubleRandomSource());
 }
 
 double pickRandomDistMat(const BoundsMatrix &mmat,
@@ -79,7 +79,7 @@ double pickRandomDistMat(const BoundsMatrix &mmat,
 
 double pickRandomDistMat(const BoundsMatrix &mmat,
                          RDNumeric::SymmMatrix<double> &distMat,
-                         const std::vector<std::vector<int> > &pairs14,
+                         const std::vector<std::vector<int> > &pairs,
                          RDKit::double_source_type &rng) {
   // make sure the sizes match up
   unsigned int npt = mmat.numRows();
@@ -94,9 +94,12 @@ double pickRandomDistMat(const BoundsMatrix &mmat,
       double lb = mmat.getLowerBound(i, j);
       CHECK_INVARIANT(ub >= lb, "");
       double rval = rng();
-      if (pairs14[i][j]) {
+      if (pairs[i][j] == 4) { // 1,4-pairs
         rval = boost::math::quantile(distBeta, rval);
-        //std::cerr<<i<<"-"<<j<<": "<<rval<<std::endl;
+        //std::cerr "1,4-pair: " << i << "-" << j<< ": " << rval << std::endl;
+      } else if (pairs[i][j] == 0) { // no 1,2-/1,3- or 1,4-pairs
+        //lb += (ub - lb)/2.0;
+        rval = boost::math::quantile(distBeta2, rval);
       }
       // std::cerr<<i<<"-"<<j<<": "<<rval<<std::endl;
       double d = lb + (rval) * (ub - lb);

@@ -1249,7 +1249,7 @@ void setTopolBounds(const ROMol &mol, DistGeom::BoundsMatPtr mmat,
 }
 
 void setTopolBounds(const ROMol &mol, DistGeom::BoundsMatPtr mmat,
-                    std::vector<std::vector<int> > &pairs14,
+                    std::vector<std::vector<int> > &pairs,
                     bool set15bounds, bool scaleVDW) {
   PRECONDITION(mmat.get(), "bad pointer");
   unsigned int nb = mol.getNumBonds();
@@ -1262,7 +1262,42 @@ void setTopolBounds(const ROMol &mol, DistGeom::BoundsMatPtr mmat,
   distMatrix = MolOps::getDistanceMat(mol);
 
   set12Bounds(mol, mmat, accumData);
+
+  // store the 1,2-interactions
+  ROMol::ConstBondIterator bi;
+  for (bi = mol.beginBonds(); bi != mol.endBonds(); ++bi) {
+    unsigned int begId = (*bi)->getBeginAtomIdx();
+    unsigned int endId = (*bi)->getEndAtomIdx();
+    pairs[begId][endId] = 2;
+    pairs[endId][begId] = 2;
+  }
+
   set13Bounds(mol, mmat, accumData);
+
+  // store the 1,3-interactions
+  for (unsigned int bid1 = 0; bid1 < nb - 1; ++bid1) {
+    for (unsigned int bid2 = bid1 + 1; bid2 < nb; ++bid2) {
+      if (accumData.bondAngles->getVal(bid1, bid2) != -1.0) {
+        int aid11 = mol.getBondWithIdx(bid1)->getBeginAtomIdx();
+        int aid12 = mol.getBondWithIdx(bid1)->getEndAtomIdx();
+        int aid21 = mol.getBondWithIdx(bid2)->getBeginAtomIdx();
+        int aid22 = mol.getBondWithIdx(bid2)->getEndAtomIdx();
+        if (aid12 == aid21) {
+          pairs[aid11][aid22] = 3;
+          pairs[aid22][aid11] = 3;
+        } else if (aid12 == aid22) {
+          pairs[aid11][aid21] = 3;
+          pairs[aid21][aid11] = 3;
+        } else if (aid11 == aid21) {
+          pairs[aid12][aid22] = 3;
+          pairs[aid22][aid12] = 3;
+        } else if (aid11 == aid22) {
+          pairs[aid12][aid21] = 3;
+          pairs[aid21][aid12] = 3;
+        }
+      }
+    }
+  }
 
   set14Bounds(mol, mmat, accumData, distMatrix);
 
@@ -1273,7 +1308,8 @@ void setTopolBounds(const ROMol &mol, DistGeom::BoundsMatPtr mmat,
     aid1 = mol.getBondWithIdx(path14.bid1)->getOtherAtomIdx(aid2);
     aid3 = accumData.bondAdj->getVal(path14.bid2, path14.bid3);
     aid4 = mol.getBondWithIdx(path14.bid3)->getOtherAtomIdx(aid3);
-    pairs14[aid1][aid4] = 1;
+    pairs[aid1][aid4] = 4;
+    pairs[aid4][aid1] = 4;
     //std::cerr << "1,4-pair: " << aid1 << " " << aid4 << std::endl;
   }
 
@@ -1287,7 +1323,7 @@ void setTopolBounds(const ROMol &mol, DistGeom::BoundsMatPtr mmat,
 void setTopolBounds(const ROMol &mol, DistGeom::BoundsMatPtr mmat,
                     std::vector<std::pair<int, int> > &bonds,
                     std::vector<std::vector<int> > &angles,
-                    std::vector<std::vector<int> > &pairs14,
+                    std::vector<std::vector<int> > &pairs,
                     bool set15bounds,
                     bool scaleVDW) {
   PRECONDITION(mmat.get(), "bad pointer");
@@ -1310,6 +1346,8 @@ void setTopolBounds(const ROMol &mol, DistGeom::BoundsMatPtr mmat,
     unsigned int begId = (*bi)->getBeginAtomIdx();
     unsigned int endId = (*bi)->getEndAtomIdx();
     bonds.push_back(std::make_pair(begId, endId));
+    pairs[begId][endId] = 2;
+    pairs[endId][begId] = 2;
   }
 
   set13Bounds(mol, mmat, accumData);
@@ -1330,21 +1368,21 @@ void setTopolBounds(const ROMol &mol, DistGeom::BoundsMatPtr mmat,
         }
 
         if (aid12 == aid21) {
-          tmp[0] = aid11;
-          tmp[1] = aid12;
-          tmp[2] = aid22;
+          tmp[0] = aid11; tmp[1] = aid12; tmp[2] = aid22;
+          pairs[aid11][aid22] = 3;
+          pairs[aid22][aid11] = 3;
         } else if (aid12 == aid22) {
-          tmp[0] = aid11;
-          tmp[1] = aid12;
-          tmp[2] = aid21;
+          tmp[0] = aid11; tmp[1] = aid12; tmp[2] = aid21;
+          pairs[aid11][aid21] = 3;
+          pairs[aid21][aid11] = 3;
         } else if (aid11 == aid21) {
-          tmp[0] = aid12;
-          tmp[1] = aid11;
-          tmp[2] = aid22;
+          tmp[0] = aid12; tmp[1] = aid11; tmp[2] = aid22;
+          pairs[aid12][aid22] = 3;
+          pairs[aid22][aid12] = 3;
         } else if (aid11 == aid22) {
-          tmp[0] = aid12;
-          tmp[1] = aid11;
-          tmp[2] = aid21;
+          tmp[0] = aid12; tmp[1] = aid11; tmp[2] = aid21;
+          pairs[aid12][aid21] = 3;
+          pairs[aid21][aid12] = 3;
         }
         angles.push_back(tmp);
       }
@@ -1360,7 +1398,8 @@ void setTopolBounds(const ROMol &mol, DistGeom::BoundsMatPtr mmat,
     aid1 = mol.getBondWithIdx(path14.bid1)->getOtherAtomIdx(aid2);
     aid3 = accumData.bondAdj->getVal(path14.bid2, path14.bid3);
     aid4 = mol.getBondWithIdx(path14.bid3)->getOtherAtomIdx(aid3);
-    pairs14[aid1][aid4] = 1;
+    pairs[aid1][aid4] = 4;
+    pairs[aid4][aid1] = 4;
     //std::cerr << "1,4-pair: " << aid1 << " " << aid4 << std::endl;
   }
 

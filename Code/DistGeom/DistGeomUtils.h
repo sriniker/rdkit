@@ -37,7 +37,7 @@ double pickRandomDistMat(const BoundsMatrix &mmat,
                          int seed = -1);
 double pickRandomDistMat(const BoundsMatrix &mmat,
                          RDNumeric::SymmMatrix<double> &distmat,
-                         const std::vector<std::vector<int> > &pairs14,
+                         const std::vector<std::vector<int> > &pairs,
                          int seed = -1);
 //! \overload
 double pickRandomDistMat(const BoundsMatrix &mmat,
@@ -45,7 +45,7 @@ double pickRandomDistMat(const BoundsMatrix &mmat,
                          RDKit::double_source_type &rng);
 double pickRandomDistMat(const BoundsMatrix &mmat,
                          RDNumeric::SymmMatrix<double> &distmat,
-                         const std::vector<std::vector<int> > &pairs14,
+                         const std::vector<std::vector<int> > &pairs,
                          RDKit::double_source_type &rng);
 
 //! Compute an initial embedded in 3D based on a distance matrix

@@ -192,7 +192,7 @@ bool _embedPoints(
     bool useExpTorsionAnglePrefs, bool useBasicKnowledge,
     const std::vector<std::pair<int, int> > &bonds,
     const std::vector<std::vector<int> > &angles,
-    const std::vector<std::vector<int> > &pairs14,
+    const std::vector<std::vector<int> > &pairs,
     const std::vector<std::vector<int> > &expTorsionAtoms,
     const std::vector<std::pair<std::vector<int>, std::vector<double> > >
         &expTorsionAngles,
@@ -229,7 +229,7 @@ bool _embedPoints(
   while ((gotCoords == false) && (iter < maxIterations)) {
     ++iter;
     if (!useRandomCoords) {
-      largestDistance = DistGeom::pickRandomDistMat(*mmat, distMat, pairs14, *rng);
+      largestDistance = DistGeom::pickRandomDistMat(*mmat, distMat, pairs, *rng);
       gotCoords = DistGeom::computeInitialCoords(distMat, *positions, *rng,
                                                  randNegEig, numZeroFail);
     } else {
@@ -528,7 +528,7 @@ typedef struct {
   bool useBasicKnowledge;
   std::vector<std::pair<int, int> > *bonds;
   std::vector<std::vector<int> > *angles;
-  std::vector<std::vector<int> > *pairs14;
+  std::vector<std::vector<int> > *pairs;
   std::vector<std::vector<int> > *expTorsionAtoms;
   std::vector<std::pair<std::vector<int>, std::vector<double> > >
       *expTorsionAngles;
@@ -558,7 +558,7 @@ void embedHelper_(int threadId, int numThreads, EmbedArgs *eargs) {
         eargs->basinThresh, (ci + 1) * eargs->seed, eargs->maxIterations,
         eargs->chiralCenters, eargs->enforceChirality,
         eargs->useExpTorsionAnglePrefs, eargs->useBasicKnowledge, *eargs->bonds,
-        *eargs->angles, *eargs->pairs14, *eargs->expTorsionAtoms, *eargs->expTorsionAngles,
+        *eargs->angles, *eargs->pairs, *eargs->expTorsionAtoms, *eargs->expTorsionAngles,
         *eargs->improperAtoms, *eargs->atomNums);
 
     if (gotCoords) {
@@ -633,18 +633,18 @@ void EmbedMultipleConfs(ROMol &mol, INT_VECT &res, unsigned int numConfs,
     std::vector<std::vector<int> > improperAtoms;
     std::vector<std::pair<int, int> > bonds;
     std::vector<std::vector<int> > angles;
-    std::vector<std::vector<int> > pairs14(nAtoms, std::vector<int>(nAtoms, 0));
+    std::vector<std::vector<int> > pairs(nAtoms, std::vector<int>(nAtoms, 0));
     std::vector<int> atomNums(nAtoms);
     if (useExpTorsionAnglePrefs || useBasicKnowledge) {
       ForceFields::CrystalFF::getExperimentalTorsions(
           *piece, expTorsionAtoms, expTorsionAngles, improperAtoms,
           useExpTorsionAnglePrefs, useBasicKnowledge, verbose, ETversion);
-      setTopolBounds(*piece, mmat, bonds, angles, pairs14, true, false);
+      setTopolBounds(*piece, mmat, bonds, angles, pairs, true, false);
       for (unsigned int i = 0; i < nAtoms; ++i) {
         atomNums[i] = (*piece).getAtomWithIdx(i)->getAtomicNum();
       }
     } else {
-      setTopolBounds(*piece, mmat, pairs14, true, false);
+      setTopolBounds(*piece, mmat, pairs, true, false);
     }
     if (coordMap) {
       adjustBoundsMatFromCoordMap(mmat, nAtoms, coordMap);
@@ -655,7 +655,7 @@ void EmbedMultipleConfs(ROMol &mol, INT_VECT &res, unsigned int numConfs,
       // matrix
       // without 15 bounds and with VDW scaling
       initBoundsMat(mmat);
-      setTopolBounds(*piece, mmat, pairs14, false, true);
+      setTopolBounds(*piece, mmat, pairs, false, true);
 
       if (coordMap) {
         adjustBoundsMatFromCoordMap(mmat, nAtoms, coordMap);
@@ -667,7 +667,7 @@ void EmbedMultipleConfs(ROMol &mol, INT_VECT &res, unsigned int numConfs,
         if (ignoreSmoothingFailures) {
           // proceed anyway with the more relaxed bounds matrix
           initBoundsMat(mmat);
-          setTopolBounds(*piece, mmat, pairs14, false, true);
+          setTopolBounds(*piece, mmat, pairs, false, true);
 
           if (coordMap) {
             adjustBoundsMatFromCoordMap(mmat, nAtoms, coordMap);
@@ -722,7 +722,7 @@ void EmbedMultipleConfs(ROMol &mol, INT_VECT &res, unsigned int numConfs,
                                useBasicKnowledge,
                                &bonds,
                                &angles,
-                               &pairs14,
+                               &pairs,
                                &expTorsionAtoms,
                                &expTorsionAngles,
                                &improperAtoms,
