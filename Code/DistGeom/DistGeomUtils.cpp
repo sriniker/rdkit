@@ -29,8 +29,8 @@
 
 namespace DistGeom {
 const double EIGVAL_TOL = 0.001;
-boost::math::beta_distribution<> distBeta(0.5, 0.5);
-boost::math::beta_distribution<> distBeta2(5.0, 2.0);
+boost::math::beta_distribution<> distBeta(0.5, 0.5); // 1,4-pairs
+boost::math::beta_distribution<> distBeta2(4.0, 2.0); // 1,8-/1,9-/1,10- or 1,11-pairs
 
 double pickRandomDistMat(const BoundsMatrix &mmat,
                          RDNumeric::SymmMatrix<double> &distMat,
@@ -97,8 +97,7 @@ double pickRandomDistMat(const BoundsMatrix &mmat,
       if (pairs[i][j] == 4) { // 1,4-pairs
         rval = boost::math::quantile(distBeta, rval);
         //std::cerr "1,4-pair: " << i << "-" << j<< ": " << rval << std::endl;
-      } else if (pairs[i][j] == 0) { // no 1,2-/1,3- or 1,4-pairs
-        //lb += (ub - lb)/2.0;
+      } else if (pairs[i][j] > 7) { // 1,8-/1,9-/1,10- or 1,11-pairs
         rval = boost::math::quantile(distBeta2, rval);
       }
       // std::cerr<<i<<"-"<<j<<": "<<rval<<std::endl;

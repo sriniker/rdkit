@@ -1346,8 +1346,7 @@ void setTopolBounds(const ROMol &mol, DistGeom::BoundsMatPtr mmat,
     unsigned int begId = (*bi)->getBeginAtomIdx();
     unsigned int endId = (*bi)->getEndAtomIdx();
     bonds.push_back(std::make_pair(begId, endId));
-    pairs[begId][endId] = 2;
-    pairs[endId][begId] = 2;
+    pairs[begId][endId] = pairs[endId][begId] = 2;
   }
 
   set13Bounds(mol, mmat, accumData);
@@ -1369,20 +1368,16 @@ void setTopolBounds(const ROMol &mol, DistGeom::BoundsMatPtr mmat,
 
         if (aid12 == aid21) {
           tmp[0] = aid11; tmp[1] = aid12; tmp[2] = aid22;
-          pairs[aid11][aid22] = 3;
-          pairs[aid22][aid11] = 3;
+          pairs[aid11][aid22] = pairs[aid22][aid11] = 3;
         } else if (aid12 == aid22) {
           tmp[0] = aid11; tmp[1] = aid12; tmp[2] = aid21;
-          pairs[aid11][aid21] = 3;
-          pairs[aid21][aid11] = 3;
+          pairs[aid11][aid21] = pairs[aid21][aid11] = 3;
         } else if (aid11 == aid21) {
           tmp[0] = aid12; tmp[1] = aid11; tmp[2] = aid22;
-          pairs[aid12][aid22] = 3;
-          pairs[aid22][aid12] = 3;
+          pairs[aid12][aid22] = pairs[aid22][aid12] = 3;
         } else if (aid11 == aid22) {
           tmp[0] = aid12; tmp[1] = aid11; tmp[2] = aid21;
-          pairs[aid12][aid21] = 3;
-          pairs[aid21][aid12] = 3;
+          pairs[aid12][aid21] = pairs[aid21][aid12] = 3;
         }
         angles.push_back(tmp);
       }
@@ -1398,8 +1393,7 @@ void setTopolBounds(const ROMol &mol, DistGeom::BoundsMatPtr mmat,
     aid1 = mol.getBondWithIdx(path14.bid1)->getOtherAtomIdx(aid2);
     aid3 = accumData.bondAdj->getVal(path14.bid2, path14.bid3);
     aid4 = mol.getBondWithIdx(path14.bid3)->getOtherAtomIdx(aid3);
-    pairs[aid1][aid4] = 4;
-    pairs[aid4][aid1] = 4;
+    pairs[aid1][aid4] = pairs[aid4][aid1] = 4;
     //std::cerr << "1,4-pair: " << aid1 << " " << aid4 << std::endl;
   }
 
@@ -1408,6 +1402,30 @@ void setTopolBounds(const ROMol &mol, DistGeom::BoundsMatPtr mmat,
   }
 
   setLowerBoundVDW(mol, mmat, scaleVDW, distMatrix);
+
+  // get all 1-N pairs for N = [5,6,7,8,9,10]
+  unsigned int numRows = mmat->numRows();
+  for (aid1 = 0; aid1 < na-1; ++aid1) {
+    for (aid2 = aid1+1; aid2 < na; ++aid2) {
+      if (pairs[aid1][aid2] == 0) { // not 1,2-, 1,3- and 1,4-pair
+        if (distMatrix[std::max(aid1, aid2) * numRows + std::min(aid1, aid2)] < 4.1) { // 1,5
+          pairs[aid1][aid2] = pairs[aid2][aid1] = 5;
+        } else if (distMatrix[std::max(aid1, aid2) * numRows + std::min(aid1, aid2)] < 5.1) { // 1,6
+          pairs[aid1][aid2] = pairs[aid2][aid1] = 6;
+        } else if (distMatrix[std::max(aid1, aid2) * numRows + std::min(aid1, aid2)] < 6.1) { // 1,7
+          pairs[aid1][aid2] = pairs[aid2][aid1] = 7;
+        } else if (distMatrix[std::max(aid1, aid2) * numRows + std::min(aid1, aid2)] < 7.1) { // 1,8
+          pairs[aid1][aid2] = pairs[aid2][aid1] = 8;
+        } else if (distMatrix[std::max(aid1, aid2) * numRows + std::min(aid1, aid2)] < 8.1) { // 1,9
+          pairs[aid1][aid2] = pairs[aid2][aid1] = 9;
+        } else if (distMatrix[std::max(aid1, aid2) * numRows + std::min(aid1, aid2)] < 9.1) { // 1,10
+          pairs[aid1][aid2] = pairs[aid2][aid1] = 10;
+        } else if (distMatrix[std::max(aid1, aid2) * numRows + std::min(aid1, aid2)] < 10.1) { // 1,11
+          pairs[aid1][aid2] = pairs[aid2][aid1] = 11;
+        }
+      }
+    }
+  }
 }
 
 // some helper functions to set 15 distances
