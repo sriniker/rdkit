@@ -333,6 +333,37 @@ bool _minimizeWithExpTorsions(
     delete field2;
   }
 
+  // check if angles are still within bounds
+  for (unsigned int a = 0; a < angles.size(); ++a) {
+    unsigned int i = angles[a][0];
+    unsigned int j = angles[a][1];
+    unsigned int k = angles[a][2];
+    double tol = 0.01;
+    // i - j
+    double d = ((*positions3D[i]) - (*positions3D[j])).length();
+    if ((d < mmat->getLowerBound(i, j)-tol) || (d > mmat->getUpperBound(i, j)+tol)) {
+    	  planar = false;
+    	  break;
+    }
+    // i - k
+	d = ((*positions3D[i]) - (*positions3D[k])).length();
+	if ((d < mmat->getLowerBound(i, k)-tol) || (d > mmat->getUpperBound(i, k)+tol)) {
+      planar = false;
+	  break;
+	}
+	// j - k
+	d = ((*positions3D[j]) - (*positions3D[k])).length();
+	if ((d < mmat->getLowerBound(j, k)-tol) || (d > mmat->getUpperBound(j, k)+tol)) {
+	  planar = false;
+	  break;
+	}
+    if (!planar) {
+#ifdef DEBUG_EMBEDDING
+      std::cerr << "   angles not fulfilled" << std::endl;
+#endif
+    }
+  }
+
   // overwrite positions and delete the 3D ones
   for (unsigned int i = 0; i < positions3D.size(); ++i) {
     (*positions[i])[0] = (*positions3D[i])[0];
